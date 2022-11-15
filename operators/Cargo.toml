@@ -33,7 +33,7 @@ once_cell = "1.14.0"
 openapi = {path = "../openapi"}
 clap = { version = "3.2.16", features = ["cargo", "derive"] }
 url = "2.3.1"
-actix-web = "4.2.1"
+actix_web = "4.2.1"
 thiserror = "1.0.37"
 humantime = "2.1.0"
 file = "1.1.2"

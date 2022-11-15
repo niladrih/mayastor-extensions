@@ -4,6 +4,7 @@ use core::time;
 use once_cell::sync::OnceCell;
 use openapi::tower::client::{ApiClient, Configuration};
 use url::Url;
+use tracing::error;
 
 use super::{helm::client::HelmClient, k8s::client::K8sClient};
 
@@ -48,7 +49,10 @@ pub struct UpgradeOperatorConfig {
 impl UpgradeOperatorConfig {
     /// Initialize operator configs.
     pub async fn initialize(args: CliArgs) -> Result<(), Error> {
-        let k8s_client = K8sClient::new().await?;
+        let k8s_client = K8sClient::new().await.map_err(|error| {
+            error!(?error, "failed to generate kube API client");
+            Error::from(error)
+        })?;
         let rest_endpoint = args.rest_endpoint;
         let config_rest = Configuration::new(
             rest_endpoint,

@@ -42,10 +42,8 @@ pub(crate) const UPGRADE_OPERATOR_CLUSTER_ROLE_BINDING: &str = "upgrade-operator
 pub(crate) const UPGRADE_CONTROLLER_DEPLOYMENT: &str = "upgrade-operator-deployment";
 /// Service name constant for upgrade operator.
 pub(crate) const UPGRADE_OPERATOR_SERVICE: &str = "upgrade-operator-service";
-/// Service port constant for upgrade operator.
-pub(crate) const UPGRADE_OPERATOR_SERVICE_PORT: i32 = 8080;
 /// Service internal port constant for upgrade operator.
-pub(crate) const UPGRADE_OPERATOR_INTERNAL_PORT: i32 = 8080;
+pub const UPGRADE_OPERATOR_INTERNAL_PORT: u16 = 8080;
 
 pub(crate) const NODE_LABEL: &str = "openebs.io/engine=mayastor";
 

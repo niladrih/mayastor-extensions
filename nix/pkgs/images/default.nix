@@ -2,7 +2,7 @@
 # avoid dependency on docker tool chain. Though the maturity of OCI
 # builder in nixpkgs is questionable which is why we postpone this step.
 
-{ dockerTools, lib, extensions, busybox, gnupg, img_tag ? "" }:
+{ dockerTools, lib, extensions, busybox, gnupg, kubernetes-helm-wrapped, img_tag ? "" }:
 let
   image_suffix = { "release" = ""; "debug" = "-debug"; "coverage" = "-coverage"; };
   build-extensions-image = { pname, buildType, package, extraCommands ? '''', contents ? [ ], config ? { } }:
@@ -32,6 +32,7 @@ let
     build-extensions-image rec{
       inherit buildType;
       package = extensions.${buildType}.operators.upgrade;
+      contents = [ ./../../../chart kubernetes-helm-wrapped busybox ];
       pname = package.pname;
       config = {
         ExposedPorts = {

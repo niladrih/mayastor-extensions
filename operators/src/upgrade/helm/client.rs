@@ -107,7 +107,7 @@ impl HelmArgs {
         self.run([
             "upgrade",
             self.release_name(),
-            Path::new("/home/sahil-ubuntu/mayastor-extensions/chart")
+            Path::new("/chart")
                 .to_str()
                 .unwrap(),
             "--wait",
