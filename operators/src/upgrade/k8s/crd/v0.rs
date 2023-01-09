@@ -8,31 +8,31 @@ use std::{collections::HashMap, str::FromStr};
 use validator::Validate;
 
 #[derive(
-    CustomResource,
-    Serialize,
-    Deserialize,
-    Debug,
-    Default,
-    Eq,
-    PartialEq,
-    Clone,
-    Validate,
-    JsonSchema,
+CustomResource,
+Serialize,
+Deserialize,
+Debug,
+Default,
+Eq,
+PartialEq,
+Clone,
+Validate,
+JsonSchema,
 )]
 #[kube(
-    group = "openebs.io",
-    version = "v0",
-    kind = "UpgradeAction",
-    singular = "upgradeaction",
-    plural = "upgradeactions",
-    namespaced,
-    status = "UpgradeActionStatus",
-    derive = "Default",
-    derive = "PartialEq",
-    shortname = "ua",
-    printcolumn = r#"{"name":"Components state", "type":"string", "jsonPath":".status.components_state"}"#,
-    printcolumn = r#"{"name":"Target Version", "type":"string", "jsonPath":".spec.target_version"}"#,
-    printcolumn = r#"{"name":"Current Version", "type":"string", "jsonPath":".spec.current_version"}"#
+group = "openebs.io",
+version = "v0",
+kind = "UpgradeAction",
+singular = "upgradeaction",
+plural = "upgradeactions",
+namespaced,
+status = "UpgradeActionStatus",
+derive = "Default",
+derive = "PartialEq",
+shortname = "ua",
+printcolumn = r#"{"name":"Components state", "type":"string", "jsonPath":".status.components_state"}"#,
+printcolumn = r#"{"name":"Target Version", "type":"string", "jsonPath":".spec.target_version"}"#,
+printcolumn = r#"{"name":"Current Version", "type":"string", "jsonPath":".spec.current_version"}"#
 )]
 
 /// Define spec for upgrade action.
@@ -108,7 +108,7 @@ impl ToString for UpgradePhase {
             UpgradePhase::Completed => "Completed",
             UpgradePhase::Error => "Error",
         }
-        .to_string()
+            .to_string()
     }
 }
 /// Upgrade phase into a string.
@@ -153,7 +153,7 @@ impl ToString for UpgradeState {
             UpgradeState::SuccessfulUpdate => "SuccessfulUpdate",
             UpgradeState::Error => "Error",
         }
-        .to_string()
+            .to_string()
     }
 }
 /// Upgrade Condition Type into a string.

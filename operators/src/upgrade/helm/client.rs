@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::upgrade::common::{constants::chart_dir_path, error::Error};
+//use crate::upgrade::helm::chart_data::ChartData;
 use tracing::error;
 
 /// Helm arguments that are required to run helm commands.
@@ -132,6 +133,11 @@ impl HelmArgs {
     /// Run helm ls command.
     fn ls(self, exact_match: &String) -> Result<Output, Error> {
         self.run(["ls", "--filter", exact_match, "--output=json"])
+    }
+
+    /// Run helm show chart command
+    fn show_chart(&self) -> Result<Output, Error> {
+        self.run(["show", "chart", chart_dir_path().to_str().unwrap()])
     }
 
     /// Create helm command and run.
@@ -292,4 +298,16 @@ impl HelmClient {
             String::from_utf8(output.stdout).map_err(|error| Error::Utf8 { source: error })?;
         Ok(output)
     }
+/*
+    pub(crate) fn show_chart(&mut self) -> ChartData {
+        let output = self
+            .args()
+            .show_chart().unwrap();
+        let de = serde_yaml::Deserializer::from_slice(output.stdout.as_slice());
+        let chart_data = ChartData::deserialize(de).unwrap();
+        debug!(?chart_data);
+
+        chart_data
+    }
+ */
 }

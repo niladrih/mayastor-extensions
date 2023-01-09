@@ -28,6 +28,10 @@ pub enum Error {
     #[error("{0}")]
     HelmChartNotFound(String),
 
+    /// Error when a thread failed to synchronize successfully
+    #[error("JoinError: {}", source)]
+    JoinError { source: tokio::task::JoinError },
+
     /// Error when converting utf8 to string.
     #[error("{}", source)]
     Utf8 { source: FromUtf8Error },
@@ -143,6 +147,12 @@ impl From<kube::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(source: url::ParseError) -> Self {
         Self::UrlParse { source }
+    }
+}
+
+impl From<tokio::task::JoinError> for Error {
+    fn from(source: tokio::task::JoinError) -> Self {
+        Self::JoinError { source }
     }
 }
 

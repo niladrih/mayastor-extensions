@@ -8,7 +8,7 @@ use url::Url;
 
 use super::{helm::client::HelmClient, k8s::client::K8sClient};
 
-static CONFIG: OnceCell<UpgradeOperatorConfig> = OnceCell::new();
+static CONFIG: OnceCell<UpgradeConfig> = OnceCell::new();
 
 /// Cli Args to initialize rest-endpoint, namespace and chart.
 #[derive(Parser)]
@@ -24,7 +24,7 @@ pub struct CliArgs {
 
     /// The chart_name we are supposed to operate in.
     #[clap(short, long, default_value = "mayastor")]
-    chart_name: String,
+    helm_chart_release_name: String,
 }
 
 impl CliArgs {
@@ -33,20 +33,20 @@ impl CliArgs {
     }
 }
 
-/// Upgrade operator config that can be passed through arguments.
-pub struct UpgradeOperatorConfig {
+/// Upgrade config that can be passed through arguments.
+pub struct UpgradeConfig {
     k8s_client: K8sClient,
     helm_client: HelmClient,
     rest_client: ApiClient,
     namespace: String,
-    chart_name: String,
+    helm_chart_release_name: String,
 }
 
-impl UpgradeOperatorConfig {
+impl UpgradeConfig {
     /// Initialize operator configs.
     pub async fn initialize(args: CliArgs) -> Result<(), Error> {
         let k8s_client = K8sClient::new().await.map_err(|error| {
-            error!(?error, "failed to generate kube API client");
+            error!(?error, "Failed to generate kube API client");
             error
         })?;
         let rest_endpoint = args.rest_endpoint;
@@ -62,30 +62,30 @@ impl UpgradeOperatorConfig {
             })?;
         let rest_client = ApiClient::new(config_rest);
         let namespace = args.namespace;
-        let chart_name = args.chart_name;
+        let helm_chart_release_name = args.helm_chart_release_name;
         let helm_client = HelmClient::new()
             .await?
-            .with_chart(chart_name.to_string(), namespace.to_string())?;
+            .with_chart(helm_chart_release_name.to_string(), namespace.to_string())?;
 
         CONFIG.get_or_init(|| Self {
             k8s_client,
             helm_client,
             rest_client,
             namespace: namespace.to_string(),
-            chart_name: chart_name.to_string(),
+            helm_chart_release_name: helm_chart_release_name.to_string(),
         });
         Ok(())
     }
 
     /// Get Upgrade operator config.
-    pub(crate) fn get_config() -> &'static UpgradeOperatorConfig {
+    pub fn get_config() -> &'static UpgradeConfig {
         CONFIG
             .get()
             .expect("Upgrade operator config is not initialized")
     }
 
     /// Get k8s client.
-    pub(crate) fn k8s_client(&self) -> K8sClient {
+    pub fn k8s_client(&self) -> K8sClient {
         self.k8s_client.clone()
     }
 
@@ -106,6 +106,6 @@ impl UpgradeOperatorConfig {
 
     /// Get chart name.
     pub(crate) fn chart_name(&self) -> &String {
-        &self.chart_name
+        &self.helm_chart_release_name
     }
 }

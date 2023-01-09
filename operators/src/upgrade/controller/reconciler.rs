@@ -19,7 +19,7 @@ use crate::upgrade::{
         constants::{IO_ENGINE_POD_LABEL, UPGRADE_ACTION_FINALIZER, UPGRADE_OPERATOR},
         error::Error,
     },
-    config::UpgradeOperatorConfig,
+    config::UpgradeConfig,
     k8s::crd::v0::{UpgradeAction, UpgradeActionStatus, UpgradePhase, UpgradeState},
     phases::{init::ComponentsState, updating::components_update},
 };
@@ -118,7 +118,7 @@ impl ResourceContext {
         Ok(Action::await_change())
     }
 
-    /// delete_finalizer deletes the finalizer of the UpgradeAction resource.
+    /// Deletes the finalizer of the UpgradeAction resource.
     #[tracing::instrument(fields(name = resource.name_any()) skip(resource))]
     pub(crate) async fn delete_finalizer(resource: ResourceContext) -> Result<Action, Error> {
         let ctx = resource.ctx.clone();
@@ -216,8 +216,8 @@ impl ResourceContext {
             .await?;
 
         let pods: Api<Pod> = Api::namespaced(
-            UpgradeOperatorConfig::get_config().k8s_client().client(),
-            UpgradeOperatorConfig::get_config().namespace(),
+            UpgradeConfig::get_config().k8s_client().client(),
+            UpgradeConfig::get_config().namespace(),
         );
         info!("Restarting io-engine pods...");
         match pods
@@ -235,6 +235,10 @@ impl ResourceContext {
                 debug!(?status, "Deleted collection of pods: status");
             }
         }
+
+        // Give kubernetes reconciler enough time to delete the pods.
+        tokio::time::sleep(Duration::from_secs(5)).await;
+
         Ok(Action::await_change())
     }
 
@@ -248,21 +252,46 @@ impl ResourceContext {
             ))
             .await?;
 
-        let nodes = UpgradeOperatorConfig::get_config()
+        UpgradeConfig::get_config()
             .rest_client()
             .nodes_api()
             .get_nodes()
-            .await;
-        match nodes {
-            Ok(_) => Ok(Action::await_change()),
-            Err(_) => {
-                self.mark_error(UpgradePhase::Error).await?;
-                // we updated the resource as an error stop reconciliation
-                Err(Error::ReconcileError {
-                    name: self.name_any(),
-                })
+            .await?;
+
+        // Verifying if the io-engine Pods are ready
+        let pods: Api<Pod> = Api::namespaced(
+            UpgradeConfig::get_config().k8s_client().client(),
+            UpgradeConfig::get_config().namespace(),
+        );
+
+        let lp = ListParams::default().labels(IO_ENGINE_POD_LABEL);
+        for pod in pods.list(&lp).await? {
+            match &pod.status {
+                Some(status) => {
+                    match &status.conditions {
+                        Some(conditions) => {
+                            for condition in conditions {
+                                if condition.type_.eq("Ready") && condition.status.eq("True") {
+                                    continue
+                                } else {
+                                    warn!("Couldn't verify the ready condition of io-engine Pod '{}' in namespace '{}' to be true", &pod.name_any(), &pod.namespace().unwrap());
+                                    return Err(Error::ReconcileError { name: self.name_any() })
+                                }
+                            }
+                        }
+                        None => {
+                            warn!("Couldn't verify the ready condition of io-engine Pod '{}' in namespace '{}' to be true", &pod.name_any(), &pod.namespace().unwrap());
+                            return Err(Error::ReconcileError { name: self.name_any() })
+                        }
+                    }
+                },
+                None => {
+                    warn!("Couldn't verify the ready condition of io-engine Pod '{}' in namespace '{}' to be true", &pod.name_any(), &pod.namespace().unwrap());
+                    return Err(Error::ReconcileError { name: self.name_any() })
+                }
             }
         }
+        Ok(Action::await_change())
     }
 
     /// Starts successful update phase.
@@ -283,7 +312,7 @@ impl ResourceContext {
         Ok(Action::await_change())
     }
 
-    /// Callback hooks for the finalizers
+    /// Callback hooks for the finalizers.
     async fn finalizer(&self) -> Result<Action, Error> {
         let _ = finalizer(
             &self.api(),
@@ -376,34 +405,34 @@ async fn reconcile(ua: Arc<UpgradeAction>, ctx: Arc<ControllerContext>) -> Resul
 
     match ua.status {
         Some(UpgradeActionStatus {
-            state: UpgradeState::NotStarted,
-            ..
-        }) => ua.updating().await,
+                 state: UpgradeState::NotStarted,
+                 ..
+             }) => ua.updating().await,
 
         Some(UpgradeActionStatus {
-            state: UpgradeState::UpdatingControlPlane,
-            ..
-        }) => ua.restart_io_engine().await,
+                 state: UpgradeState::UpdatingControlPlane,
+                 ..
+             }) => ua.restart_io_engine().await,
 
         Some(UpgradeActionStatus {
-            state: UpgradeState::UpdatingDataPlane,
-            ..
-        }) => ua.verifying().await,
+                 state: UpgradeState::UpdatingDataPlane,
+                 ..
+             }) => ua.verifying().await,
 
         Some(UpgradeActionStatus {
-            state: UpgradeState::VerifyingUpdate,
-            ..
-        }) => ua.successful_update().await,
+                 state: UpgradeState::VerifyingUpdate,
+                 ..
+             }) => ua.successful_update().await,
 
         Some(UpgradeActionStatus {
-            state: UpgradeState::SuccessfulUpdate,
-            ..
-        }) => ua.delete().await,
+                 state: UpgradeState::SuccessfulUpdate,
+                 ..
+             }) => ua.delete().await,
 
         Some(UpgradeActionStatus {
-            state: UpgradeState::Error,
-            ..
-        }) => {
+                 state: UpgradeState::Error,
+                 ..
+             }) => {
             error!(upgrade = ua.name_any(), "entered error as final state");
             Err(Error::ReconcileError {
                 name: ua.name_any(),
@@ -415,24 +444,22 @@ async fn reconcile(ua: Arc<UpgradeAction>, ctx: Arc<ControllerContext>) -> Resul
         None => ua.start().await,
     }
 }
-
 /// Upgrade controller that has its own resource and controller context.
-pub async fn upgrade_controller() -> Result<(), Error> {
+pub fn start_upgrade_worker() {
     let ua: Api<UpgradeAction> = Api::namespaced(
-        UpgradeOperatorConfig::get_config().k8s_client().client(),
-        UpgradeOperatorConfig::get_config().namespace(),
+        UpgradeConfig::get_config().k8s_client().client(),
+        UpgradeConfig::get_config().namespace(),
     );
     let lp = ListParams::default();
 
     let context = ControllerContext {
-        k8s: UpgradeOperatorConfig::get_config().k8s_client().client(),
+        k8s: UpgradeConfig::get_config().k8s_client().client(),
         inventory: tokio::sync::RwLock::new(HashMap::new()),
     };
 
     Controller::new(ua, lp)
         .run(reconcile, error_policy, Arc::new(context))
         .for_each(|res| async move {
-            //let _= res.unwrap()..start().await;
             match res {
                 Ok(o) => {
                     trace!(?o);
@@ -441,8 +468,13 @@ pub async fn upgrade_controller() -> Result<(), Error> {
                     trace!(?e);
                 }
             }
-        })
-        .await;
+        });
+ }
 
-    Ok(())
+/*
+pub fn is_valid_upgrade_path(current: Version, target: Version) -> Result<(), Error>{
+    // Check if the target version is the same as the version of the chart
+    let chart_data = UpgradeConfig::helm_client().show_chart()?;
+    chart_data.
 }
+*/

@@ -1,6 +1,6 @@
 use crate::upgrade::{
     common::constants::components,
-    config::UpgradeOperatorConfig,
+    config::UpgradeConfig,
     k8s::crd::v0::{UpgradeAction, UpgradeActionSpec},
 };
 use k8s_openapi::{
@@ -20,7 +20,7 @@ use crate::upgrade::common::{constants::NODE_LABEL, error::Error};
 
 /// K8sClient is used to talk to the kube-apiserver.
 #[derive(Clone)]
-pub(crate) struct K8sClient {
+pub struct K8sClient {
     client: kube::Client,
 }
 
@@ -59,7 +59,7 @@ impl K8sClient {
     }
 
     /// Creates UpgradeAction CustomResource
-    pub(crate) async fn create_upgrade_action_crd(&self) -> Result<(), Error> {
+    pub async fn create_upgrade_action_crd(&self) -> Result<(), Error> {
         let ua: Api<CustomResourceDefinition> = Api::all(self.client.clone());
         let crds = self.get_crds().await?;
 
@@ -86,7 +86,7 @@ impl K8sClient {
     pub(crate) async fn get_upgrade_action_resource(&self) -> Result<UpgradeAction, Error> {
         let uas: Api<UpgradeAction> = Api::namespaced(
             self.client.clone(),
-            UpgradeOperatorConfig::get_config().namespace(),
+            UpgradeConfig::get_config().namespace(),
         );
 
         match uas.get("upgrade").await {
@@ -102,7 +102,7 @@ impl K8sClient {
     pub(crate) async fn create_upgrade_action_resource(&self) -> Result<UpgradeAction, Error> {
         let uas: Api<UpgradeAction> = Api::namespaced(
             self.client.clone(),
-            UpgradeOperatorConfig::get_config().namespace(),
+            UpgradeConfig::get_config().namespace(),
         );
         match self.get_upgrade_action_resource().await {
             Ok(u) => {
@@ -119,11 +119,7 @@ impl K8sClient {
         );
 
         match uas.create(&PostParams::default(), &ua).await {
-            Ok(o) => {
-                tokio::time::sleep(Duration::from_secs(5)).await;
-                Ok(o)
-            }
-
+            Ok(o) => Ok(o),
             Err(error) => {
                 error!(?error, "Failed to create CustomResource");
                 tokio::time::sleep(Duration::from_secs(1)).await;

@@ -1,16 +1,17 @@
 use actix_web::{middleware, HttpServer};
 use operators::upgrade::{
     common::{constants::UPGRADE_OPERATOR_INTERNAL_PORT, error::Error},
-    config::{CliArgs, UpgradeOperatorConfig},
+    config::{CliArgs, UpgradeConfig},
     rest::service,
 };
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
+use operators::upgrade::controller::reconciler::start_upgrade_worker;
 
 /// Initialize upgrade operator config that are passed through arguments.
-async fn initialize_operator(args: CliArgs) -> Result<(), Error> {
+async fn initialize_upgrade_config(args: CliArgs) -> Result<(), Error> {
     info!("Initializing Upgrade operator...");
-    UpgradeOperatorConfig::initialize(args).await
+    UpgradeConfig::initialize(args).await
 }
 
 #[actix_web::main]
@@ -22,19 +23,37 @@ async fn main() -> Result<(), Error> {
 
     let args = CliArgs::args();
 
-    initialize_operator(args).await.map_err(|error| {
+    initialize_upgrade_config(args).await.map_err(|error| {
         error!(?error, "Failed to initialize Upgrade Operator");
         error
     })?;
 
-    let app = move || {
+    match UpgradeConfig::get_config()
+        .k8s_client()
+        .create_upgrade_action_crd().await {
+        Ok(()) => info!("UpgradeAction CRD created"),
+        Err(error) => {
+            error!(?error, "Failed to create UpgradeAction CRD");
+            std::process::exit(1);
+        }
+    };
+    info!("Starting Upgrade controller...");
+    tokio::task::spawn_blocking(move || {
+        start_upgrade_worker()
+    }).await?;
+
+
+    // Start Upgrade API.
+    info!(
+        "Starting to listen on port {}...",
+        UPGRADE_OPERATOR_INTERNAL_PORT
+    );
+    HttpServer::new(move || {
         actix_web::App::new()
             .wrap(middleware::Logger::default())
             .service(service::apply_upgrade)
             .service(service::get_upgrade)
-    };
-
-    let app_server = HttpServer::new(app)
+        })
         .bind(("0.0.0.0", UPGRADE_OPERATOR_INTERNAL_PORT))
         .map_err(|error| {
             error!(
@@ -42,15 +61,12 @@ async fn main() -> Result<(), Error> {
                 "Failed to bind API to socket address 0.0.0.0:{}", UPGRADE_OPERATOR_INTERNAL_PORT
             );
             Error::from(error)
-        })?;
-
-    // Start Upgrade API.
-    info!(
-        "Starting to listen on port {}",
-        UPGRADE_OPERATOR_INTERNAL_PORT
-    );
-    app_server.workers(2_usize).run().await.map_err(|error| {
-        error!(?error, "Failed to start Upgrade API server");
-        Error::from(error)
-    })
+        })?
+        .workers(2_usize)
+        .run()
+        .await
+        .map_err(|error| {
+            error!(?error, "Failed to start Upgrade API server");
+            Error::from(error)
+        })
 }
