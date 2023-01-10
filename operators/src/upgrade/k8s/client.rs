@@ -60,13 +60,20 @@ impl K8sClient {
 
     /// Creates UpgradeAction CustomResource
     pub async fn create_upgrade_action_crd(&self) -> Result<(), Error> {
+        info!("before line 1");
         let ua: Api<CustomResourceDefinition> = Api::all(self.client.clone());
+        info!("before line 2");
         let crds = self.get_crds().await?;
 
+        info!("before line 3");
         if crds.iter().count() == 0 {
+            info!("before line 4");
             let crd = UpgradeAction::crd();
 
+            info!("before line 5");
             let pp = PostParams::default();
+
+            info!("before line 6");
             match ua.create(&pp, &crd).await {
                 Ok(_) => {
                     tokio::time::sleep(Duration::from_secs(5)).await;
