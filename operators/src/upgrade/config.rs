@@ -79,6 +79,7 @@ impl UpgradeConfig {
 
     /// Get Upgrade operator config.
     pub fn get_config() -> &'static UpgradeConfig {
+        tracing::info!("before first line of get_config()");
         CONFIG
             .get()
             .expect("Upgrade operator config is not initialized")
@@ -86,6 +87,7 @@ impl UpgradeConfig {
 
     /// Get k8s client.
     pub fn k8s_client(&self) -> K8sClient {
+        tracing::info!("before k8s_client return line");
         self.k8s_client.clone()
     }
 
