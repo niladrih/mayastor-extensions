@@ -3559,6 +3559,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-error"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d686ec1c0f384b1277f097b2f279a2ecc11afe8c133c1aabf036a27cb4cd206e"
+dependencies = [
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "tracing-futures"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3726,6 +3736,27 @@ dependencies = [
  "serde_json",
  "tower",
  "tracing",
+]
+
+[[package]]
+name = "upgrade-job"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "futures",
+ "k8s-openapi",
+ "kube",
+ "openapi",
+ "regex",
+ "serde",
+ "serde_yaml 0.9.17",
+ "snafu",
+ "tokio",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+ "url",
+ "utils",
 ]
 
 [[package]]
