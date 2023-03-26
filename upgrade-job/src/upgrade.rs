@@ -8,7 +8,8 @@ use kube::{runtime::events::Recorder, Client as k8s_client};
 pub(crate) mod data_plane;
 pub(crate) mod utils;
 
-pub(crate) async fn upgrade(opts: &CliArgs, event_recorder: &Recorder) -> Result<()> {
+//pub(crate) async fn upgrade(opts: &CliArgs, event_recorder: &Recorder) -> Result<()> {
+pub(crate) async fn upgrade(opts: &CliArgs) -> Result<()> {
     let helm_upgrade = HelmUpgrade::default(opts).build()?;
 
     // Control plane containers are updated in this step.

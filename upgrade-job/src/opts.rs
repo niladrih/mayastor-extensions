@@ -84,9 +84,10 @@ impl CliArgs {
     pub(crate) fn restart_data_plane(&self) -> bool {
         self.restart_data_plane
     }
-
+/*
     /// This returns the name of the Kubernetes Pod where this binary will be running.
     pub(crate) fn pod_name(&self) -> String {
         self.pod_name.clone()
     }
+*/
 }

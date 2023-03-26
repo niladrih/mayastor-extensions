@@ -8,7 +8,7 @@ use crate::{
 };
 use clap::Parser;
 use common::error::{must, Error, Result};
-use k8s::event_helper::generate_event_recorder_for_k8s_job;
+//use k8s::event_helper::generate_event_recorder_for_k8s_job;
 use kube::Client;
 use openapi::tower::client::ApiClient;
 use opts::CliArgs;
@@ -24,7 +24,7 @@ use utils::ETCD_LABEL;
 
 mod common;
 mod helm;
-mod k8s;
+//mod k8s;
 mod opts;
 mod upgrade;
 
@@ -35,9 +35,10 @@ async fn main() {
     // Global resources -- storage REST client and kube client are initialized in this step.
     let opts = must(parse_cli_args().await);
 
-    let event_recorder = must(generate_event_recorder_for_k8s_job(&opts).await);
+//    let event_recorder = must(generate_event_recorder_for_k8s_job(&opts).await);
 
-    must(upgrade(&opts, &event_recorder).await);
+//    must(upgrade(&opts, &event_recorder).await);
+    must(upgrade(&opts).await);
 }
 
 /// Initialize logging components -- tracing.
