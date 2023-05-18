@@ -149,6 +149,7 @@ DEVELOP_TO_REL=
 DATE_TIME_FMT="%Y-%m-%d-%H-%M-%S"
 DATE_TIME=
 IGNORE_INDEX_CHECK=
+USE_APP_TAG_AS_IMG_TAG=false
 
 # Check if all needed tools are installed
 semver --version >/dev/null
@@ -204,6 +205,10 @@ while [ "$#" -gt 0 ]; do
       DATE_TIME=$1
       shift
       ;;
+    --use-app-tag-as-image-tag)
+      shift
+      USE_APP_TAG_AS_IMG_TAG=true
+      ;;
     *)
       help
       die "Unknown option: $1"
@@ -222,16 +227,24 @@ if [ -z "$CHART_APP_VERSION" ]; then
   CHART_APP_VERSION=$(yq '.appVersion' "$CHART_FILE")
 fi
 
+# --use-app-tag-as-image-tag requires --app-tag.
+# e.g.: publish-chart-yaml.sh --app-tag ${tag} --use-app-tag-as-image-tag --override-index ""
+if [ "$USE_APP_TAG_AS_IMG_TAG" = true ] && [ -z "$APP_TAG" ]; then
+  die "Must use '--app-tag <tag>' option with the '--use-app-tag-as-image-tag' flag"
+fi
+
 CHART_VERSION=$(version "$CHART_VERSION")
 CHART_APP_VERSION=$(version "$CHART_APP_VERSION")
-
 if [ -n "$CHECK_BRANCH" ]; then
+
   APP_TAG=$(branch_chart_version "$CHECK_BRANCH")
 else
   if [ -z "$APP_TAG" ]; then
     die "--app-tag not specified"
   fi
-  APP_TAG=$(version "$APP_TAG")
+  if [ "$USE_APP_TAG_AS_IMG_TAG" = false ]; then
+    APP_TAG=$(version "$APP_TAG")
+  fi
 fi
 
 echo "APP_TAG: $APP_TAG"
