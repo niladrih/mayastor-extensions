@@ -15,12 +15,7 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d81bbc5e-90f1-4e6c-a480-9f33c93f29e0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/chart/Chart.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/chart/Chart.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chart/templates/etcd/storage/localpv-storageclass.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/chart/templates/etcd/storage/localpv-storageclass.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chart/templates/loki-stack/storage/localpv-storageclass.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/chart/templates/loki-stack/storage/localpv-storageclass.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chart/values.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/chart/values.yaml" afterDir="false" />
-    </list>
+    <list default="true" id="d81bbc5e-90f1-4e6c-a480-9f33c93f29e0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

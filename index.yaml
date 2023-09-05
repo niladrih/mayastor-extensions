@@ -3,7 +3,7 @@ entries:
   mayastor:
   - apiVersion: v2
     appVersion: 2.4.0
-    created: "2023-09-05T05:54:34.5137057Z"
+    created: "2023-09-05T06:05:49.741875549Z"
     dependencies:
     - name: etcd
       repository: https://charts.bitnami.com/bitnami
@@ -31,34 +31,4 @@ entries:
     urls:
     - https://niladrih.github.io/mayastor-extensions/mayastor-2.4.1.tgz
     version: 2.4.1
-  - apiVersion: v2
-    appVersion: 2.4.0
-    created: "2023-09-05T05:54:34.471834382Z"
-    dependencies:
-    - name: etcd
-      repository: https://charts.bitnami.com/bitnami
-      version: 8.6.0
-    - condition: base.jaeger.enabled
-      name: jaeger-operator
-      repository: https://jaegertracing.github.io/helm-charts
-      version: 2.25.0
-    - condition: loki-stack.enabled
-      name: loki-stack
-      repository: https://grafana.github.io/helm-charts
-      version: 2.6.4
-    - condition: eventing.enabled
-      name: nats
-      repository: https://nats-io.github.io/k8s/helm/charts/
-      version: 0.19.14
-    - condition: localpv-provisioner.enabled
-      name: localpv-provisioner
-      repository: https://openebs.github.io/dynamic-localpv-provisioner
-      version: 3.4.1
-    description: Mayastor Helm chart for Kubernetes
-    digest: e94defbcc3e8ce4d016076a8a56440c169977f399f0aebcc6e8a4e325bf2c181
-    name: mayastor
-    type: application
-    urls:
-    - https://niladrih.github.io/mayastor-extensions/mayastor-2.4.0.tgz
-    version: 2.4.0
-generated: "2023-09-05T05:54:34.431024717Z"
+generated: "2023-09-05T06:05:49.689487608Z"
