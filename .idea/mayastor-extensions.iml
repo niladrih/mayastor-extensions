@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="CPP_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/call-home/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/console-logger/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exporter/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/k8s/plugin/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/k8s/proxy/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/k8s/supportability/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/k8s/upgrade-job/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/k8s/upgrade/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/operators/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/dependencies/control-plane/utils/dependencies/mbus-api/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/dependencies/control-plane/utils/dependencies/events-api/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
