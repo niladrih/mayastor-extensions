@@ -2,7 +2,7 @@ name: Main Helm Chart
 on:
   push:
     branches:
-      - main
+      - github-actions-test
     paths:
       - 'chart/**'
 
@@ -26,4 +26,12 @@ jobs:
         run: |
           branch="${{ github.ref_name }}"
           nix-shell --pure --run "./scripts/helm/publish-chart-yaml.sh --check-chart "$branch"" ./scripts/helm/shell.nix
-
+      - name: Publish Mayastor Helm chart
+        uses: stefanprodan/helm-gh-pages@v1.5.0
+        with:
+          token: ${{ secrets.PLAYING_GOD }}
+          charts_dir: chart
+          charts_url: https://niladrih.github.io/github-actions-test
+          owner: niladrih
+          repository: github-actions-test
+          branch: gh-pages
