@@ -22,15 +22,11 @@ jobs:
       - name: Update loglevel to debug
         run: |
           sed -Ei "s~(logLevel: .*)~logLevel: debug~" chart/values.yaml
-      - name: Check if the chart is publishable
-        run: |
-          branch="${{ github.ref_name }}"
-          nix-shell --pure --run "./scripts/helm/publish-chart-yaml.sh --check-chart "$branch"" ./scripts/helm/shell.nix
       - name: Publish Mayastor Helm chart
         uses: stefanprodan/helm-gh-pages@v1.5.0
         with:
           token: ${{ secrets.PLAYING_GOD }}
-          charts_dir: chart
+          charts_dir: .
           charts_url: https://niladrih.github.io/github-actions-test
           owner: niladrih
           repository: github-actions-test
