@@ -16,7 +16,7 @@ image:
     dataPlane: ""
     extensions: ""
   # -- ImagePullPolicy for our images
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 # -- Node labels for pod assignment
 # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
